@@ -1,0 +1,1336 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>运营工作台 · 平台激发 · 触达策略</title>
+<style>
+  :root{
+    --blue: #155BD4;
+    --blue-light: #EAF1FE;
+    --blue-dark: #0E45A6;
+    --red: #E34D42;
+    --green: #16A34A;
+    --gray-900: #1F2329;
+    --gray-700: #4E5969;
+    --gray-500: #8A919C;
+    --gray-300: #D9DDE3;
+    --gray-200: #E8EAED;
+    --gray-100: #F5F6F8;
+    --bg: #F0F2F5;
+    --white: #FFFFFF;
+    --radius: 4px;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--gray-900);
+    font-size: 13px;
+    -webkit-font-smoothing: antialiased;
+  }
+  a{color:var(--blue); text-decoration:none; cursor:pointer;}
+  a:hover{text-decoration:underline;}
+
+  /* ---------- Layout ---------- */
+  #app{display:flex; flex-direction:column; height:100vh;}
+  #topbar{
+    height:52px; flex:none; background:var(--white); border-bottom:1px solid var(--gray-200);
+    display:flex; align-items:center; padding:0 20px; gap:14px;
+  }
+  #topbar .logo{font-weight:700; font-size:16px; color:var(--gray-900); display:flex; align-items:center; gap:8px;}
+  #topbar .logo .dot{width:10px;height:10px;border-radius:3px;background:var(--blue);display:inline-block;}
+  #topbar .crumbs{color:var(--gray-500); font-size:12px;}
+  #topbar .crumbs b{color:var(--gray-900); font-weight:500;}
+  #topbar .spacer{flex:1;}
+  #topbar .userbox{display:flex; align-items:center; gap:8px; color:var(--gray-700); font-size:12px;}
+  #topbar .avatar{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#6FA8FF,#155BD4);}
+
+  #body-row{flex:1; display:flex; min-height:0;}
+
+  #sidebar{
+    width:200px; flex:none; background:var(--white); border-right:1px solid var(--gray-200);
+    overflow-y:auto; padding:10px 0;
+  }
+  #sidebar .sec-title{padding:10px 18px 4px; font-size:11px; color:var(--gray-500); letter-spacing:.5px;}
+  #sidebar .nav-item{
+    display:flex; align-items:center; gap:8px; padding:9px 18px; color:var(--gray-700); font-size:13px; cursor:pointer;
+    border-left:3px solid transparent;
+  }
+  #sidebar .nav-item:hover{background:var(--gray-100);}
+  #sidebar .nav-item.active{background:var(--blue-light); color:var(--blue); border-left-color:var(--blue); font-weight:600;}
+  #sidebar .nav-item .ic{width:6px;height:6px;border-radius:50%;background:var(--gray-300);}
+  #sidebar .nav-item.active .ic{background:var(--blue);}
+
+  #main{flex:1; overflow-y:auto; padding:18px 22px 60px;}
+
+  .panel{background:var(--white); border-radius:6px; border:1px solid var(--gray-200);}
+  .panel + .panel{margin-top:14px;}
+
+  /* ---------- List view ---------- */
+  .page-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;}
+  .page-head h1{font-size:18px; margin:0; font-weight:600;}
+  .page-head .desc{color:var(--gray-500); font-size:12px; margin-top:4px;}
+
+  .search-bar{display:flex; align-items:flex-end; gap:12px; padding:16px 18px; margin-bottom:14px;}
+  .search-field{display:flex; flex-direction:column; gap:6px;}
+  .search-field label{font-size:12px; color:var(--gray-700);}
+  .search-field input{width:340px;}
+
+  .empty-state{display:flex; flex-direction:column; align-items:center; justify-content:center; padding:70px 20px; text-align:center; color:var(--gray-500);}
+  .empty-state .empty-icon{font-size:30px; margin-bottom:10px; opacity:.6;}
+  .empty-state .empty-text{font-size:13px;}
+
+  table.grid{width:100%; border-collapse:collapse; font-size:12.5px;}
+  table.grid th{
+    background:var(--gray-100); color:var(--gray-700); font-weight:500; text-align:left;
+    padding:10px 12px; border-bottom:1px solid var(--gray-200); white-space:nowrap;
+  }
+  table.grid td{padding:12px; border-bottom:1px solid var(--gray-200); vertical-align:top; color:var(--gray-900);}
+  table.grid tr:last-child td{border-bottom:none;}
+  .tag-active{display:inline-block; background:#E7F8EE; color:var(--green); border-radius:3px; padding:1px 6px; font-size:11px; margin-left:6px;}
+  .id-sub{color:var(--gray-500); font-size:11px; margin-top:3px;}
+  .op-link{margin-right:12px; font-size:12.5px;}
+  .op-link.primary{color:var(--blue); font-weight:500;}
+
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:6px;
+    border:1px solid var(--gray-300); background:var(--white); color:var(--gray-700);
+    padding:7px 16px; border-radius:4px; font-size:13px; cursor:pointer; line-height:1.2;
+  }
+  .btn:hover{border-color:var(--blue); color:var(--blue);}
+  .btn-primary{background:var(--blue); border-color:var(--blue); color:#fff;}
+  .btn-primary:hover{background:var(--blue-dark); border-color:var(--blue-dark); color:#fff;}
+  .btn-sm{padding:4px 10px; font-size:12px;}
+  .btn[disabled]{opacity:.5; cursor:not-allowed;}
+
+  /* ---------- Wizard ---------- */
+  #wizard{display:none;}
+  #wizard.show{display:block;}
+  #list-view.hide, #wizard.hide{display:none;}
+
+  .steps{display:flex; align-items:center; padding:18px 24px; background:var(--white); border-radius:6px; border:1px solid var(--gray-200); margin-bottom:14px;}
+  .step{display:flex; align-items:center; gap:8px; color:var(--gray-500); font-size:13px;}
+  .step .num{
+    width:22px;height:22px;border-radius:50%;background:var(--gray-200); color:var(--gray-500);
+    display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:600; flex:none;
+  }
+  .step.active .num{background:var(--blue); color:#fff;}
+  .step.done .num{background:var(--green); color:#fff;}
+  .step.active{color:var(--gray-900); font-weight:600;}
+  .step.done{color:var(--gray-900);}
+  .step-line{flex:1; height:1px; background:var(--gray-300); margin:0 14px; min-width:20px;}
+
+  .wizard-body{display:flex; gap:14px; align-items:flex-start;}
+  .form-col{flex:1; min-width:0;}
+  .preview-col{width:300px; flex:none;}
+
+  .form-section{background:var(--white); border:1px solid var(--gray-200); border-radius:6px; padding:20px 22px; margin-bottom:14px;}
+  .form-section h3{font-size:14px; margin:0 0 16px; padding-bottom:10px; border-bottom:1px solid var(--gray-200); font-weight:600;}
+
+  .field-row{display:flex; align-items:flex-start; padding:9px 0; gap:10px;}
+  .field-label{width:110px; flex:none; text-align:right; padding-top:7px; font-size:13px; color:var(--gray-900);}
+  .field-label.req::before{content:"*"; color:var(--red); margin-right:3px;}
+  .field-control{flex:1; min-width:0; display:flex; flex-direction:column; gap:4px;}
+  .field-hint{color:var(--gray-500); font-size:11.5px; line-height:1.5;}
+  .field-error{color:var(--red); font-size:11.5px; display:none;}
+  .field-row.has-error .field-error{display:block;}
+  .field-row.has-error input, .field-row.has-error textarea, .field-row.has-error .radio-group{
+    outline: 1px solid var(--red);
+    border-radius: 3px;
+  }
+
+  input[type=text], input[type=number], input[type=date], input[type=datetime-local], textarea, select{
+    width:100%; border:1px solid var(--gray-300); border-radius:4px; padding:7px 10px; font-size:13px;
+    font-family: var(--font); color:var(--gray-900); background:var(--white);
+  }
+  input:focus, textarea:focus, select:focus{outline:none; border-color:var(--blue); box-shadow:0 0 0 2px var(--blue-light);}
+  textarea{resize:vertical; min-height:70px;}
+  .char-count{align-self:flex-end; color:var(--gray-500); font-size:11px;}
+
+  .radio-group, .checkbox-group{display:flex; align-items:center; gap:18px; flex-wrap:wrap; padding-top:6px;}
+  .radio-opt, .checkbox-opt{display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer; color:var(--gray-900);}
+  .radio-opt input, .checkbox-opt input{margin:0; cursor:pointer;}
+
+  .inline-2{display:flex; gap:8px; align-items:center;}
+  .inline-2 > *{flex:1;}
+  .unit{color:var(--gray-500); font-size:12px; white-space:nowrap;}
+
+  .sub-panel{
+    border:1px dashed var(--gray-300); border-radius:4px; padding:12px; margin-top:6px; background:var(--gray-100);
+    display:none;
+  }
+  .sub-panel.show{display:block;}
+
+  .upload-box{display:flex; align-items:center; gap:10px;}
+  .file-chip{display:none; align-items:center; gap:6px; background:var(--blue-light); color:var(--blue); border-radius:4px; padding:4px 10px; font-size:12px;}
+  .file-chip.show{display:inline-flex;}
+  .file-chip .x{cursor:pointer; font-weight:700;}
+
+  .thumb-upload{
+    width:88px; height:88px; border:1px dashed var(--gray-300); border-radius:4px;
+    display:flex; align-items:center; justify-content:center; flex-direction:column; gap:4px;
+    color:var(--gray-500); font-size:11px; cursor:pointer; background:var(--gray-100); text-align:center; overflow:hidden;
+  }
+  .thumb-upload img{width:100%; height:100%; object-fit:cover;}
+  .thumb-upload:hover{border-color:var(--blue); color:var(--blue);}
+
+  .tag-chip{display:inline-flex; align-items:center; gap:6px; background:var(--gray-100); border:1px solid var(--gray-300); border-radius:14px; padding:3px 10px 3px 12px; font-size:12px; color:var(--gray-700);}
+  .tag-chip .x{cursor:pointer; color:var(--gray-500); font-weight:700;}
+
+  .rule-summary{display:flex; align-items:center; gap:10px; background:var(--blue-light); border-radius:4px; padding:10px 14px; margin-top:8px; font-size:12.5px; color:var(--blue-dark); display:none;}
+  .rule-summary.show{display:flex;}
+  .rule-summary b{font-size:14px;}
+
+  .wizard-footer{display:flex; justify-content:center; gap:10px; padding:18px 0 40px;}
+
+  /* ---------- Preview card (mirrors 图文利益点 template) ---------- */
+  .preview-sticky{position:sticky; top:0;}
+  .preview-title{font-size:12.5px; color:var(--gray-500); margin-bottom:8px; font-weight:600;}
+  .card-preview{
+    border-radius:8px; overflow:hidden; border:1px solid var(--gray-200); background:linear-gradient(135deg,#F6F9FF,#EAF1FE);
+    padding:14px; display:flex; gap:12px; align-items:center;
+  }
+  .card-preview .pic{width:56px; height:56px; border-radius:6px; background:var(--white); border:1px solid var(--gray-200); flex:none; overflow:hidden; display:flex; align-items:center; justify-content:center; color:var(--gray-300); font-size:10px;}
+  .card-preview .pic img{width:100%;height:100%;object-fit:cover;}
+  .card-preview .mid{flex:1; min-width:0;}
+  .card-preview .mid .tag{display:inline-block; font-size:10px; padding:1px 5px; border-radius:2px; margin-bottom:4px;}
+  .card-preview .mid .main-t{font-size:14px; font-weight:700; color:var(--gray-900); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .card-preview .mid .sub-t{font-size:11px; color:var(--gray-500); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .card-preview .mid .metric{font-size:11px; color:var(--gray-700); margin-top:5px;}
+  .card-preview .mid .metric b{color:var(--red); font-size:13px;}
+  .card-preview .btn-mini{flex:none; background:var(--blue); color:#fff; font-size:11px; padding:6px 12px; border-radius:14px; white-space:nowrap;}
+
+  .preview-box{background:var(--white); border:1px solid var(--gray-200); border-radius:6px; padding:14px; margin-bottom:14px;}
+  .preview-box h4{font-size:12.5px; margin:0 0 8px; color:var(--gray-700); font-weight:600;}
+  .preview-box .kv{display:flex; justify-content:space-between; font-size:12px; padding:5px 0; border-bottom:1px dashed var(--gray-200); color:var(--gray-700);}
+  .preview-box .kv:last-child{border-bottom:none;}
+  .preview-box .kv b{color:var(--gray-900); font-weight:500; text-align:right; max-width:170px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+
+  /* ---------- Modal ---------- */
+  .modal-mask{
+    position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:center; justify-content:center; z-index:999; padding:20px;
+  }
+  .modal-mask.show{display:flex;}
+  .modal{background:#fff; border-radius:8px; width:820px; max-width:100%; max-height:90vh; display:flex; flex-direction:column; overflow:hidden;}
+  .modal-head{display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:1px solid var(--gray-200);}
+  .modal-head h3{margin:0; font-size:15px; font-weight:600;}
+  .modal-head .hint{font-size:11.5px; color:var(--gray-500); font-weight:400; margin-top:3px;}
+  .modal-head .links{display:flex; gap:14px; font-size:12px;}
+  .modal-close{cursor:pointer; color:var(--gray-500); font-size:18px; line-height:1;}
+  .modal-body{padding:18px 20px; overflow-y:auto; flex:1;}
+  .modal-foot{display:flex; justify-content:flex-end; gap:10px; padding:14px 20px; border-top:1px solid var(--gray-200);}
+
+  .rule-tabs{display:flex; align-items:center; gap:8px; margin-bottom:12px;}
+  .rule-tab{background:var(--blue-light); color:var(--blue); border-radius:4px; padding:5px 14px; font-size:12.5px; font-weight:600;}
+  .rule-add{width:24px;height:24px;border-radius:4px;border:1px dashed var(--gray-300); display:flex; align-items:center; justify-content:center; color:var(--gray-500); cursor:pointer;}
+
+  .modal-search{margin-bottom:12px;}
+
+  .filter-row{display:flex; align-items:flex-start; gap:10px; padding:10px 0; border-bottom:1px dashed var(--gray-200);}
+  .filter-row:last-child{border-bottom:none;}
+  .filter-label{width:150px; flex:none; font-size:12.5px; color:var(--gray-700); padding-top:6px;}
+  .filter-value{flex:1; display:flex; flex-wrap:wrap; gap:6px; align-items:center;}
+  .apply-btn{color:var(--blue); font-size:12px; cursor:pointer; white-space:nowrap; padding-top:5px;}
+
+  .calc-row{display:flex; align-items:center; gap:16px; margin-top:14px; padding-top:14px; border-top:1px solid var(--gray-200); flex-wrap:wrap;}
+  .calc-row .field-label{width:auto; text-align:left; padding-top:0;}
+  .calc-count{font-size:13px; color:var(--gray-900);}
+  .calc-count b{color:var(--blue); font-size:16px;}
+
+  .toast-wrap{position:fixed; top:20px; left:50%; transform:translateX(-50%); z-index:1200; display:flex; flex-direction:column; gap:8px; align-items:center;}
+  .toast{background:#1F2329; color:#fff; padding:10px 20px; border-radius:6px; font-size:13px; box-shadow:0 4px 16px rgba(0,0,0,.2); display:flex; align-items:center; gap:8px; opacity:0; transform:translateY(-8px); transition:all .25s;}
+  .toast.show{opacity:1; transform:translateY(0);}
+  .toast.success{background:#16A34A;}
+  .toast.error{background:#E34D42;}
+
+  code.mono{font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background:var(--gray-100); padding:1px 5px; border-radius:3px; font-size:11.5px; color:var(--gray-700);}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ============ TOP BAR ============ -->
+  <div id="topbar" data-testid="topbar">
+    <div class="logo"><span class="dot"></span>运营工作台</div>
+    <div class="crumbs">平台激发_新 &nbsp;/&nbsp; <b id="crumb-current">激发能力管理</b></div>
+    <div class="spacer"></div>
+    <div class="userbox"><span class="avatar"></span>运营小白 &nbsp;|&nbsp; <a href="javascript:void(0)">帮助文档</a></div>
+  </div>
+
+  <div id="body-row">
+    <!-- ============ SIDEBAR ============ -->
+    <div id="sidebar" data-testid="sidebar">
+      <div class="sec-title">平台激发</div>
+      <div class="nav-item"><span class="ic"></span>平台激发_新</div>
+      <div class="nav-item active" id="nav-strategy" data-testid="nav-strategy"><span class="ic"></span>激发能力管理</div>
+      <div class="nav-item"><span class="ic"></span>触点管理</div>
+      <div class="nav-item"><span class="ic"></span>触达用户圈选</div>
+      <div class="nav-item"><span class="ic"></span>标签圈选</div>
+      <div class="sec-title">数据与审批</div>
+      <div class="nav-item"><span class="ic"></span>发布审批</div>
+      <div class="nav-item"><span class="ic"></span>触达效果数据</div>
+      <div class="nav-item"><span class="ic"></span>商家反馈</div>
+    </div>
+
+    <!-- ============ MAIN ============ -->
+    <div id="main">
+
+      <!-- ---------- LIST VIEW ---------- -->
+      <div id="list-view">
+        <div class="page-head">
+          <div>
+            <h1>激发能力管理</h1>
+            <div class="desc">管理商家触达激发能力，配置触达策略、触达用户与生效时间</div>
+          </div>
+        </div>
+
+        <!-- 查询区 -->
+        <div class="panel search-bar">
+          <div class="search-field">
+            <label for="input-search-capability">激发能力名称/ID</label>
+            <input type="text" id="input-search-capability" data-testid="input-search-capability"
+                   placeholder="请输入激发能力名称或激发能力ID，如：服务商代运营激发 / 558">
+          </div>
+          <button class="btn btn-primary" id="btn-search-capability" data-testid="btn-search-capability" type="button">查询</button>
+          <button class="btn" id="btn-reset-search" data-testid="btn-reset-search" type="button">重置</button>
+        </div>
+
+        <!-- 未查询 / 无结果占位态 -->
+        <div class="panel empty-state" id="list-empty-state" data-testid="list-empty-state">
+          <div class="empty-icon">🔍</div>
+          <div class="empty-text" id="list-empty-text">请输入激发能力名称或激发能力ID后点击查询</div>
+        </div>
+
+        <!-- 查询结果表格 -->
+        <div class="panel" id="list-table-panel" data-testid="list-table-panel" style="display:none;">
+          <table class="grid" data-testid="strategy-table">
+            <thead>
+              <tr>
+                <th style="width:180px;">激发能力</th>
+                <th style="width:110px;">策略ID</th>
+                <th>触达策略</th>
+                <th style="width:90px;">触点</th>
+                <th style="width:90px;">触达用户</th>
+                <th style="width:90px;">触达时间</th>
+                <th style="width:160px;">生效时间</th>
+                <th style="width:110px;">策略状态</th>
+                <th style="width:180px;">操作</th>
+              </tr>
+            </thead>
+            <tbody id="strategy-tbody" data-testid="strategy-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ---------- WIZARD VIEW ---------- -->
+      <div id="wizard">
+        <div class="page-head">
+          <div>
+            <h1>新增触达策略</h1>
+            <div class="desc">所属激发能力：服务商代运营激发（激发id: 558）</div>
+          </div>
+          <a href="javascript:void(0)" id="btn-back-list" data-testid="btn-back-list">&larr; 返回列表</a>
+        </div>
+
+        <div class="steps" data-testid="step-indicator">
+          <div class="step active" data-step="1"><span class="num">1</span>选择触点和模版</div>
+          <div class="step-line"></div>
+          <div class="step" data-step="2"><span class="num">2</span>选择触达用户</div>
+          <div class="step-line"></div>
+          <div class="step" data-step="3"><span class="num">3</span>选择生效时间</div>
+          <div class="step-line"></div>
+          <div class="step" data-step="4"><span class="num">4</span>填写基本信息</div>
+        </div>
+
+        <!-- ===== STEP 1 ===== -->
+        <div class="wizard-body" id="step-panel-1" data-step-panel="1">
+          <div class="form-col">
+            <div class="form-section">
+              <h3>第一步：选择触点和模版</h3>
+
+              <div class="field-row">
+                <div class="field-label req">触点</div>
+                <div class="field-control">
+                  <div class="radio-group" id="group-touchpoint" data-testid="group-touchpoint">
+                    <label class="radio-opt"><input type="radio" name="touchpoint" value="经营建议" checked> 经营建议</label>
+                    <label class="radio-opt"><input type="radio" name="touchpoint" value="弹窗"> 弹窗</label>
+                    <label class="radio-opt"><input type="radio" name="touchpoint" value="消息激发"> 消息激发</label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="field-row">
+                <div class="field-label">激发触点</div>
+                <div class="field-control">
+                  <select id="select-jf-touchpoint" data-testid="select-jf-touchpoint">
+                    <option>PC首页</option>
+                    <option selected>APP首页</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="field-row">
+                <div class="field-label">激发模版</div>
+                <div class="field-control">
+                  <select id="select-template" data-testid="select-template">
+                    <option>pc插件</option>
+                    <option selected>图文利益点</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="field-row">
+                <div class="field-label req">触达平台</div>
+                <div class="field-control">
+                  <div class="checkbox-group" id="group-platform" data-testid="group-platform">
+                    <label class="checkbox-opt"><input type="checkbox" value="京麦APP" checked> 京麦APP</label>
+                  </div>
+                  <div class="field-hint">加载模版去掉限制条件，可以在选择快捷投放平台</div>
+                </div>
+              </div>
+
+              <div class="field-row">
+                <div class="field-label">数据获取方式</div>
+                <div class="field-control">
+                  <div class="radio-group">
+                    <label class="radio-opt"><input type="radio" name="datamode" value="动态获取"> 动态获取</label>
+                    <label class="radio-opt"><input type="radio" name="datamode" value="静态配置" checked> 静态配置</label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="field-row">
+                <div class="field-label req">主标题</div>
+                <div class="field-control">
+                  <input type="text" id="input-main-title" data-testid="input-main-title" maxlength="10" placeholder="如：开通运费险 销量提升30%" value="参与新达补贴">
+                  <div class="field-hint">必填，建议不要超过10个字，超出的字展示不出来，展示为&hellip;</div>
+                  <div class="field-error">请输入主标题</div>
+                </div>
+              </div>
+
+              <div class="field-row">
+                <div class="field-label">副标题</div>
+                <div class="field-control">
+                  <input type="text" id="input-sub-title" data-testid="input-sub-title" maxlength="20" placeholder="如：开通赠送100物流券" value="曝光最高至10倍">
+                </div>
+              </div>
+
+              <div class="field-row">
+                <div class="field-label req">运营图</div>
+                <div class="field-control">
+                  <div class="upload-box">
+                    <div class="thumb-upload" id="btn-upload-banner" data-testid="btn-upload-banner">
+                      <img id="banner-preview-img" style="display:none;">
+                      <span id="banner-upload-label">点击上传<br>运营图</span>
+                    </div>
+                    <a href="javascript:void(0)" id="btn-random-banner" data-testid="btn-random-banner">从素材库随机选取</a>
+                  </div>
+                  <div class="field-hint">必填，在素材库里面随机找一个</div>
+                  <div class="field-error">请上传运营图</div>
+                </div>
+              </div>
+
+              <div class="field-row">
+                <div class="field-label">标签名称</div>
+                <div class="field-control">
+                  <select id="select-tag-name" data-testid="select-tag-name">
+                    <option value="">不展示标签</option>
+                    <option value="报活动" selected>报活动</option>
+                    <option value="返佣金">返佣金</option>
+                    <option value="学课程">学课程</option>
+                    <option value="领权益">领权益</option>
+                    <option value="投广告">投广告</option>
+                  </select>
+                  <div class="field-hint">非必填，有它会让商家更容易识别，须3个字，如：报活动、返佣金、学课程、领权益、投广告</div>
+                </div>
+              </div>
+
+              <div class="field-row">
+                <div class="field-label req">利益点</div>
+                <div class="field-control">
+                  <input type="text" id="input-benefit-point" data-testid="input-benefit-point" maxlength="8" value="预计提升">
+                  <div class="field-hint">核心利益，如：预计提升、立即降低等字眼</div>
+                  <div class="field-error">请输入利益点</div>
+                </div>
+              </div>
+
+              <div class="field-row">
+                <div class="field-label">指标值</div>
+                <div class="field-control">
+                  <div class="inline-2" style="max-width:200px;">
+                    <input type="number" id="input-metric-value" data-testid="input-metric-value" value="20">
+                    <span class="unit">%（无需输入符号）</span>
+                  </div>
+                  <div class="field-hint">提升了或者降低了百分多少就直接写数字，填20，就是20%的意思</div>
+                </div>
+              </div>
+
+              <div class="field-row">
+                <div class="field-label">指标符号</div>
+                <div class="field-control">
+                  <input type="text" id="input-metric-symbol" data-testid="input-metric-symbol" placeholder="留空，不要输入%">
+                  <div class="field-hint">为空，不要输入%</div>
+                </div>
+              </div>
+
+              <div class="field-row">
+                <div class="field-label">指标类型</div>
+                <div class="field-control">
+                  <select id="select-metric-type" data-testid="select-metric-type">
+                    <option selected>相对值</option>
+                    <option>绝对值</option>
+                  </select>
+                  <div class="field-hint">选相对值，指的是：%的意思</div>
+                </div>
+              </div>
+
+              <div class="field-row">
+                <div class="field-label">利益指标</div>
+                <div class="field-control">
+                  <select id="select-benefit-metric" data-testid="select-benefit-metric">
+                    <option selected>成交额</option>
+                    <option>订单量</option>
+                    <option>曝光量</option>
+                  </select>
+                  <div class="field-hint">你的任务给商家带来成交额的提升还是订单量的提升，业务自行决定</div>
+                </div>
+              </div>
+
+              <div class="field-row">
+                <div class="field-label">执行类型</div>
+                <div class="field-control">
+                  <select id="select-exec-type" data-testid="select-exec-type">
+                    <option selected>落地页</option>
+                    <option>弹窗二次确认</option>
+                  </select>
+                  <div class="field-hint">选落地页，指点击这个任务跳转去了指定链接</div>
+                </div>
+              </div>
+
+              <div class="field-row">
+                <div class="field-label">按钮文案</div>
+                <div class="field-control">
+                  <input type="text" id="input-btn-text" data-testid="input-btn-text" maxlength="4" value="立即报名">
+                  <div class="field-hint">建议统一3个字</div>
+                </div>
+              </div>
+
+              <div class="field-row">
+                <div class="field-label req">跳转链接</div>
+                <div class="field-control">
+                  <input type="text" id="input-jump-link" data-testid="input-jump-link" placeholder="https://mc.jd.com/shopAdmin/industry/detail?id=180637">
+                  <div class="field-hint">必填，如果不填就是线上bug，运营事故了</div>
+                  <div class="field-error">请填写跳转链接</div>
+                </div>
+              </div>
+
+              <div class="field-row">
+                <div class="field-label req">预览图片</div>
+                <div class="field-control">
+                  <div class="upload-box">
+                    <div class="thumb-upload" id="btn-upload-preview" data-testid="btn-upload-preview">
+                      <img id="preview-img-thumb" style="display:none;">
+                      <span id="preview-upload-label">点击上传<br>预览图</span>
+                    </div>
+                  </div>
+                  <div class="field-hint">必填，用于审批，不对商家展示</div>
+                  <div class="field-error">请上传预览图片</div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <div class="preview-col">
+            <div class="preview-sticky">
+              <div class="preview-title">实时预览 · 图文利益点卡片</div>
+              <div class="card-preview">
+                <div class="pic" id="preview-card-pic">图</div>
+                <div class="mid">
+                  <span class="tag" id="preview-card-tag" style="background:#FDECEC;color:#E3101E;">报活动</span>
+                  <div class="main-t" id="preview-card-title">参与新达补贴</div>
+                  <div class="sub-t" id="preview-card-sub">曝光最高至10倍</div>
+                  <div class="metric"><span id="preview-card-benefit">预计提升</span> <b id="preview-card-metric">¥9,169</b></div>
+                </div>
+                <div class="btn-mini" id="preview-card-btn">立即报名</div>
+              </div>
+
+              <div class="preview-box" style="margin-top:16px;">
+                <h4>字段汇总（供核对）</h4>
+                <div class="kv"><span>触点</span><b id="sum-touchpoint">经营建议</b></div>
+                <div class="kv"><span>触达平台</span><b id="sum-platform">京麦APP</b></div>
+                <div class="kv"><span>利益指标</span><b id="sum-benefit-metric">成交额</b></div>
+                <div class="kv"><span>执行类型</span><b id="sum-exec-type">落地页</b></div>
+                <div class="kv"><span>跳转链接</span><b id="sum-jump-link">未填写</b></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== STEP 2 ===== -->
+        <div class="wizard-body" id="step-panel-2" data-step-panel="2" style="display:none;">
+          <div class="form-col" style="max-width:760px;">
+            <div class="form-section">
+              <h3>第二步：选择触达用户</h3>
+
+              <div class="field-row">
+                <div class="field-label req">触达用户</div>
+                <div class="field-control">
+                  <div class="radio-group" id="group-reach-user" data-testid="group-reach-user">
+                    <label class="radio-opt"><input type="radio" name="reachuser" value="全部" checked> 全部</label>
+                    <label class="radio-opt"><input type="radio" name="reachuser" value="指定用户"> 指定用户</label>
+                    <label class="radio-opt"><input type="radio" name="reachuser" value="标签圈选"> 标签圈选</label>
+                  </div>
+                  <div class="field-hint" id="reach-user-hint">如果你覆盖的商家涉及全量商家这里选全部，比如618大促，可以全量触达。正常任务不建议全量圈商，会导致圈商不精准，点击率低，从而导致该任务拿不到曝光机会。</div>
+                </div>
+              </div>
+
+              <!-- 全部 -->
+              <div class="sub-panel show" id="panel-reach-all">
+                <div class="field-row">
+                  <div class="field-label">覆盖业务域</div>
+                  <div class="field-control">
+                    <div class="checkbox-group">
+                      <label class="checkbox-opt"><input type="checkbox" checked disabled> POP</label>
+                      <label class="checkbox-opt"><input type="checkbox" checked disabled> 小店</label>
+                      <label class="checkbox-opt"><input type="checkbox" disabled> 供应商</label>
+                      <label class="checkbox-opt"><input type="checkbox" disabled> 采购</label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 指定用户 -->
+              <div class="sub-panel" id="panel-reach-specific">
+                <div class="field-row">
+                  <div class="field-label">业务域</div>
+                  <div class="field-control">
+                    <div class="checkbox-group">
+                      <label class="checkbox-opt"><input type="checkbox" checked> POP、小店</label>
+                      <label class="checkbox-opt"><input type="checkbox"> 供应商</label>
+                      <label class="checkbox-opt"><input type="checkbox"> 采购</label>
+                    </div>
+                  </div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label req">用户PIN名单</div>
+                  <div class="field-control">
+                    <div class="upload-box">
+                      <button class="btn btn-sm" id="btn-upload-userlist" data-testid="btn-upload-userlist" type="button">上传文件</button>
+                      <a href="javascript:void(0)" id="btn-download-template" data-testid="btn-download-template">下载模版</a>
+                      <span class="file-chip" id="userlist-file-chip">venderID_list.xlsx <span class="x" id="userlist-file-remove">&times;</span></span>
+                    </div>
+                    <div class="field-hint">根据模版，上传你指定的商家venderID，支持xlsx，单次最大50M</div>
+                    <div class="field-error">请上传商家名单文件</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 标签圈选 -->
+              <div class="sub-panel" id="panel-reach-tag">
+                <div class="field-row">
+                  <div class="field-label">业务域</div>
+                  <div class="field-control">
+                    <div class="checkbox-group">
+                      <label class="checkbox-opt"><input type="checkbox" checked> POP、小店</label>
+                    </div>
+                  </div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label req">标签圈店</div>
+                  <div class="field-control">
+                    <a href="javascript:void(0)" id="btn-open-rule-modal" data-testid="btn-open-rule-modal">标签圈店 &rsaquo;</a>
+                    <div class="field-hint">如果你希望圈特定画像的商家，可以通过标签圈商。这里的标签来自经海路，须先申请权限才能使用。</div>
+                    <div class="rule-summary" id="rule-summary-box">
+                      <span>已设置选店规则：规则1</span>
+                      <span>预计覆盖商家数量：<b id="rule-summary-count">--</b></span>
+                      <a href="javascript:void(0)" id="btn-edit-rule">编辑</a>
+                    </div>
+                    <div class="field-error">请设置标签圈选规则</div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== STEP 3 ===== -->
+        <div class="wizard-body" id="step-panel-3" data-step-panel="3" style="display:none;">
+          <div class="form-col" style="max-width:760px;">
+            <div class="form-section">
+              <h3>第三步：选择生效时间</h3>
+
+              <div class="field-row">
+                <div class="field-label req">生效时间</div>
+                <div class="field-control">
+                  <div class="inline-2">
+                    <input type="datetime-local" id="input-effect-start" data-testid="input-effect-start" value="2026-07-11T10:00">
+                    <span class="unit">至</span>
+                    <input type="datetime-local" id="input-effect-end" data-testid="input-effect-end" value="2029-07-11T00:00">
+                  </div>
+                  <label class="checkbox-opt" style="margin-top:6px;">
+                    <input type="checkbox" id="chk-long-term" data-testid="chk-long-term"> 长期在线（结束时间选：长期）
+                  </label>
+                  <div class="field-hint">可以有明确的开始时间和结束时间，如果是长期在线的，结束时间选：长期</div>
+                </div>
+              </div>
+
+              <div class="field-row">
+                <div class="field-label">触达时间</div>
+                <div class="field-control">
+                  <div class="radio-group" id="group-reach-time" data-testid="group-reach-time">
+                    <label class="radio-opt"><input type="radio" name="reachtime" value="不限" checked> 不限</label>
+                    <label class="radio-opt"><input type="radio" name="reachtime" value="指定时段"> 指定时段</label>
+                  </div>
+                  <div class="sub-panel" id="panel-reach-time-range">
+                    <div class="inline-2">
+                      <input type="time" id="input-reach-time-start" value="09:00">
+                      <span class="unit">至</span>
+                      <input type="time" id="input-reach-time-end" value="21:00">
+                    </div>
+                  </div>
+                  <div class="field-hint">触达时间：选不限</div>
+                </div>
+              </div>
+
+              <div class="field-row">
+                <div class="field-label">触达频率</div>
+                <div class="field-control">
+                  <div class="radio-group" id="group-reach-freq" data-testid="group-reach-freq">
+                    <label class="radio-opt"><input type="radio" name="reachfreq" value="每次" checked> 每次</label>
+                    <label class="radio-opt"><input type="radio" name="reachfreq" value="每天"> 每天</label>
+                    <label class="radio-opt"><input type="radio" name="reachfreq" value="每周"> 每周</label>
+                    <label class="radio-opt"><input type="radio" name="reachfreq" value="每小时"> 每小时</label>
+                  </div>
+                  <div class="field-hint">触达频次：选每次</div>
+                </div>
+              </div>
+
+              <div class="field-row">
+                <div class="field-label">触达上限</div>
+                <div class="field-control">
+                  <div class="radio-group" id="group-reach-cap" data-testid="group-reach-cap">
+                    <label class="radio-opt"><input type="radio" name="reachcap" value="不限" checked> 不限</label>
+                    <label class="radio-opt"><input type="radio" name="reachcap" value="指定次数"> 指定次数</label>
+                  </div>
+                  <div class="sub-panel" id="panel-reach-cap-input">
+                    <div class="inline-2" style="max-width:200px;">
+                      <input type="number" id="input-reach-cap" min="1" value="3">
+                      <span class="unit">次</span>
+                    </div>
+                  </div>
+                  <div class="field-hint">触达上限：选不限</div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== STEP 4 ===== -->
+        <div class="wizard-body" id="step-panel-4" data-step-panel="4" style="display:none;">
+          <div class="form-col" style="max-width:760px;">
+            <div class="form-section">
+              <h3>第四步：填写基本信息</h3>
+
+              <div class="field-row">
+                <div class="field-label req">策略名称</div>
+                <div class="field-control">
+                  <input type="text" id="input-strategy-name" data-testid="input-strategy-name" maxlength="30" placeholder="卓引30天内新商去货源平台发品">
+                  <div class="char-count"><span id="count-name">0</span>/30</div>
+                  <div class="field-hint">必填，原则：要让小白运营看明白这是什么事，让什么样的商家做什么动作</div>
+                  <div class="field-error">请输入策略名称</div>
+                </div>
+              </div>
+
+              <div class="field-row">
+                <div class="field-label req">策略说明</div>
+                <div class="field-control">
+                  <textarea id="input-strategy-desc" data-testid="input-strategy-desc" maxlength="300" placeholder="预填描述格式：针对XX新进驻商家进行的发品策略；解决的问题：主要解决新商家发品率低的问题，通过给到流量曝光激励&hellip;"></textarea>
+                  <div class="char-count"><span id="count-desc">0</span>/300</div>
+                  <div class="field-hint">必填，按照模版填写，不超过300个字，用于AI识别并向各个场景推荐你的任务</div>
+                  <div class="field-error">请输入策略说明</div>
+                </div>
+              </div>
+
+              <div class="field-row">
+                <div class="field-label">优先级</div>
+                <div class="field-control">
+                  <div class="inline-2" style="max-width:160px; align-items:stretch;">
+                    <button class="btn btn-sm" id="btn-priority-minus" type="button" style="flex:none; width:32px;">&minus;</button>
+                    <input type="number" id="input-priority" data-testid="input-priority" value="1" min="1" style="text-align:center;">
+                    <button class="btn btn-sm" id="btn-priority-plus" type="button" style="flex:none; width:32px;">+</button>
+                  </div>
+                  <div class="field-hint">如果有多条任务，优先级数字越大，越优先曝光</div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <div class="preview-col">
+            <div class="preview-sticky">
+              <div class="preview-box">
+                <h4>提交前信息检查一遍</h4>
+                <div class="kv"><span>触点</span><b id="chk-touchpoint">经营建议</b></div>
+                <div class="kv"><span>主标题</span><b id="chk-title">--</b></div>
+                <div class="kv"><span>跳转链接</span><b id="chk-link">--</b></div>
+                <div class="kv"><span>触达用户</span><b id="chk-reach-user">全部</b></div>
+                <div class="kv"><span>生效时间</span><b id="chk-effect-time">--</b></div>
+                <div class="kv"><span>触达频率</span><b id="chk-freq">每次</b></div>
+                <div class="kv"><span>策略名称</span><b id="chk-name">--</b></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="wizard-footer">
+          <button class="btn" id="btn-cancel" data-testid="btn-cancel">取消</button>
+          <button class="btn" id="btn-prev" data-testid="btn-prev" style="display:none;">上一步</button>
+          <button class="btn btn-primary" id="btn-next" data-testid="btn-next">下一步</button>
+          <button class="btn btn-primary" id="btn-submit" data-testid="btn-submit" style="display:none;">提交发布申请</button>
+        </div>
+
+      </div><!-- /#wizard -->
+
+    </div><!-- /#main -->
+  </div><!-- /#body-row -->
+</div><!-- /#app -->
+
+<!-- ============ MODAL: 设置选店规则 ============ -->
+<div class="modal-mask" id="modal-rule" data-testid="modal-rule">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <h3>设置选店规则</h3>
+        <div class="hint">提示：支持1个字段多条规则；同一规则内店铺规则取交集，多条规则间取并集</div>
+      </div>
+      <div class="links">
+        <a href="javascript:void(0)">我的收藏</a>
+        <a href="javascript:void(0)">全部已选规则</a>
+        <span class="modal-close" id="btn-close-rule-modal" data-testid="btn-close-rule-modal">&times;</span>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div class="rule-tabs">
+        <div class="rule-tab">规则1</div>
+        <div class="rule-add" title="新增规则">+</div>
+      </div>
+
+      <input type="text" class="modal-search" placeholder="输入人员或输入项目名称搜索" id="rule-search">
+
+      <div class="filter-row">
+        <div class="filter-label">部门 <span title="按部门筛选可触达商家范围">&#9432;</span></div>
+        <div class="filter-value">
+          <span class="tag-chip">拍拍二手业务部 <span class="x">&times;</span></span>
+          <span class="tag-chip">图书业务部 <span class="x">&times;</span></span>
+          <span class="tag-chip">消消台业务部 <span class="x">&times;</span></span>
+          <span class="tag-chip">时尚零业务部 <span class="x">&times;</span></span>
+          <span class="tag-chip">家电业务部 <span class="x">&times;</span></span>
+          <span class="tag-chip">珠宝业务部 <span class="x">&times;</span></span>
+          <span class="tag-chip">+283 更多</span>
+        </div>
+        <div class="apply-btn" id="btn-permission-apply" data-testid="btn-permission-apply">权限申请</div>
+      </div>
+
+      <div class="filter-row">
+        <div class="filter-label">平台店铺分层</div>
+        <div class="filter-value">
+          <div class="checkbox-group" id="group-shop-level" data-testid="group-shop-level">
+            <label class="checkbox-opt"><input type="checkbox" value="L1"> L1</label>
+            <label class="checkbox-opt"><input type="checkbox" value="L2"> L2</label>
+            <label class="checkbox-opt"><input type="checkbox" value="L3"> L3</label>
+            <label class="checkbox-opt"><input type="checkbox" value="L4"> L4</label>
+            <label class="checkbox-opt"><input type="checkbox" value="L5" checked> L5</label>
+            <label class="checkbox-opt"><input type="checkbox" value="L6" checked> L6</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <div class="filter-label">店铺量级</div>
+        <div class="filter-value">
+          <select id="select-shop-scale-op" style="width:90px;">
+            <option selected>大于</option>
+            <option>小于</option>
+            <option>等于</option>
+          </select>
+          <input type="number" id="input-shop-scale" value="4.0" step="0.1" style="width:100px;">
+          <span class="unit">星</span>
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <div class="filter-label">经营主体类型</div>
+        <div class="filter-value">
+          <div class="checkbox-group">
+            <label class="checkbox-opt"><input type="checkbox" value="B店"> B店</label>
+            <label class="checkbox-opt"><input type="checkbox" value="C店" checked> C店</label>
+            <label class="checkbox-opt"><input type="checkbox" value="其他"> 其他</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <div class="filter-label">本年是否曾发布</div>
+        <div class="filter-value">
+          <div class="radio-group">
+            <label class="radio-opt"><input type="radio" name="published-year" value="是" checked> 是</label>
+            <label class="radio-opt"><input type="radio" name="published-year" value="否"> 否</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="calc-row">
+        <div class="field-label req" style="margin:0;">有效期</div>
+        <input type="date" id="input-rule-expiry" value="2027-05-15" style="width:170px;">
+        <div class="calc-count">商家数量：<b id="rule-calc-result">--</b></div>
+        <button class="btn btn-sm" id="btn-calc-rule" data-testid="btn-calc-rule" type="button">计算</button>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" id="btn-rule-cancel" data-testid="btn-rule-cancel">取消</button>
+      <button class="btn btn-primary" id="btn-rule-save" data-testid="btn-rule-save">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<script>
+(function(){
+
+  // ---------- helpers ----------
+  function $(sel, root){ return (root||document).querySelector(sel); }
+  function $all(sel, root){ return Array.from((root||document).querySelectorAll(sel)); }
+  function toast(msg, type){
+    var wrap = $('#toast-wrap');
+    var el = document.createElement('div');
+    el.className = 'toast' + (type ? ' ' + type : '');
+    el.textContent = msg;
+    wrap.appendChild(el);
+    requestAnimationFrame(function(){ el.classList.add('show'); });
+    setTimeout(function(){
+      el.classList.remove('show');
+      setTimeout(function(){ el.remove(); }, 300);
+    }, 2200);
+  }
+
+  // ---------- nav: list <-> wizard ----------
+  var listView = $('#list-view');
+  var wizard = $('#wizard');
+  var crumb = $('#crumb-current');
+
+  function showList(){
+    listView.style.display = '';
+    wizard.classList.remove('show');
+    crumb.textContent = '激发能力管理';
+  }
+  function showWizard(){
+    listView.style.display = 'none';
+    wizard.classList.add('show');
+    crumb.textContent = '新增触达策略';
+    goToStep(1);
+  }
+
+  $('#btn-back-list').addEventListener('click', showList);
+  $('#btn-cancel').addEventListener('click', showList);
+
+  // ---------- list data + search ----------
+  // 数据源：激发能力 558 下的触达策略记录。默认不展示，须先查询。
+  var strategyRecords = [
+    {
+      capabilityName: '服务商代运营激发',
+      capabilityId: '558',
+      strategyId: '--',
+      strategyName: '--',
+      touchpoint: '--',
+      reachUser: '--',
+      reachTime: '--',
+      effectRange: '--',
+      statusText: '生效',
+      statusClass: 'tag-active',
+      statusStyle: ''
+    }
+  ];
+
+  var tbody = $('#strategy-tbody');
+  var tablePanel = $('#list-table-panel');
+  var emptyState = $('#list-empty-state');
+  var emptyText = $('#list-empty-text');
+  var searchInput = $('#input-search-capability');
+
+  function buildRowHtml(r){
+    return '' +
+      '<tr>' +
+      '<td>' + r.capabilityName + '<div class="id-sub">激发id: ' + r.capabilityId + '</div></td>' +
+      '<td>' + r.strategyId + '</td>' +
+      '<td>' + r.strategyName + '</td>' +
+      '<td>' + r.touchpoint + '</td>' +
+      '<td>' + r.reachUser + '</td>' +
+      '<td>' + r.reachTime + '</td>' +
+      '<td>' + r.effectRange + '</td>' +
+      '<td><span class="tag-active" style="' + r.statusStyle + '">' + r.statusText + '</span></td>' +
+      '<td>' +
+      '<a class="op-link" href="javascript:void(0)">下线</a>' +
+      '<a class="op-link" href="javascript:void(0)">编辑</a>' +
+      '<a class="op-link primary" href="javascript:void(0)" data-action="add-strategy" data-testid="btn-add-strategy">新增触达策略</a>' +
+      '</td>' +
+      '</tr>';
+  }
+
+  function renderRows(records){
+    tbody.innerHTML = records.map(buildRowHtml).join('');
+  }
+
+  function setEmptyState(text){
+    emptyText.textContent = text;
+    emptyState.style.display = 'flex';
+    tablePanel.style.display = 'none';
+  }
+
+  function doSearch(){
+    var q = searchInput.value.trim();
+    if(!q){
+      setEmptyState('请输入激发能力名称或激发能力ID后点击查询');
+      return;
+    }
+    var matched = strategyRecords.filter(function(r){
+      return r.capabilityName.indexOf(q) > -1 ||
+             r.capabilityId.indexOf(q) > -1 ||
+             String(r.strategyId).indexOf(q) > -1;
+    });
+    if(matched.length === 0){
+      setEmptyState('未找到与"' + q + '"匹配的激发能力，请检查名称或ID是否正确');
+      return;
+    }
+    renderRows(matched);
+    emptyState.style.display = 'none';
+    tablePanel.style.display = '';
+  }
+
+  $('#btn-search-capability').addEventListener('click', doSearch);
+  searchInput.addEventListener('keydown', function(e){
+    if(e.key === 'Enter') doSearch();
+  });
+  $('#btn-reset-search').addEventListener('click', function(){
+    searchInput.value = '';
+    setEmptyState('请输入激发能力名称或激发能力ID后点击查询');
+  });
+
+  // 事件委托：表格内动态渲染的"新增触达策略"按钮
+  tbody.addEventListener('click', function(e){
+    var target = e.target.closest('[data-action="add-strategy"]');
+    if(target) showWizard();
+  });
+
+  // ---------- step control ----------
+  var currentStep = 1;
+  var TOTAL_STEPS = 4;
+
+  function goToStep(n){
+    currentStep = n;
+    $all('.step').forEach(function(s){
+      var idx = parseInt(s.getAttribute('data-step'), 10);
+      s.classList.remove('active','done');
+      if(idx < n) s.classList.add('done');
+      if(idx === n) s.classList.add('active');
+    });
+    $all('[data-step-panel]').forEach(function(p){
+      p.style.display = (parseInt(p.getAttribute('data-step-panel'),10) === n) ? 'flex' : 'none';
+    });
+    $('#btn-prev').style.display = n > 1 ? 'inline-flex' : 'none';
+    $('#btn-next').style.display = n < TOTAL_STEPS ? 'inline-flex' : 'none';
+    $('#btn-submit').style.display = n === TOTAL_STEPS ? 'inline-flex' : 'none';
+    if(n === TOTAL_STEPS){ updateFinalSummary(); }
+    window.scrollTo({top:0, behavior:'instant' in window ? 'instant' : 'auto'});
+  }
+
+  function clearErrors(scope){
+    $all('.field-row.has-error', scope).forEach(function(r){ r.classList.remove('has-error'); });
+  }
+
+  function markError(fieldRow){
+    fieldRow.classList.add('has-error');
+  }
+
+  function validateStep(n){
+    clearErrors(document);
+    var ok = true;
+
+    if(n === 1){
+      var checks = [
+        ['#input-main-title', function(el){ return el.value.trim().length > 0; }],
+        ['#input-benefit-point', function(el){ return el.value.trim().length > 0; }],
+        ['#input-jump-link', function(el){ return el.value.trim().length > 0; }]
+      ];
+      checks.forEach(function(c){
+        var el = $(c[0]);
+        if(!c[1](el)){ markError(el.closest('.field-row')); ok = false; }
+      });
+      if(!bannerUploaded){ markError($('#btn-upload-banner').closest('.field-row')); ok = false; }
+      if(!previewUploaded){ markError($('#btn-upload-preview').closest('.field-row')); ok = false; }
+    }
+
+    if(n === 2){
+      var mode = $('input[name="reachuser"]:checked').value;
+      if(mode === '指定用户' && !userListUploaded){
+        markError($('#btn-upload-userlist').closest('.field-row'));
+        ok = false;
+      }
+      if(mode === '标签圈选' && !ruleSaved){
+        markError($('#btn-open-rule-modal').closest('.field-row'));
+        ok = false;
+      }
+    }
+
+    if(n === 4){
+      var nameEl = $('#input-strategy-name');
+      var descEl = $('#input-strategy-desc');
+      if(nameEl.value.trim().length === 0){ markError(nameEl.closest('.field-row')); ok = false; }
+      if(descEl.value.trim().length === 0){ markError(descEl.closest('.field-row')); ok = false; }
+    }
+
+    if(!ok) toast('请完善必填信息后再继续', 'error');
+    return ok;
+  }
+
+  $('#btn-next').addEventListener('click', function(){
+    if(!validateStep(currentStep)) return;
+    if(currentStep < TOTAL_STEPS) goToStep(currentStep + 1);
+  });
+  $('#btn-prev').addEventListener('click', function(){
+    if(currentStep > 1) goToStep(currentStep - 1);
+  });
+
+  // ---------- Step 1: live preview ----------
+  var placeholderImg = 'data:image/svg+xml;utf8,' + encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><rect width="120" height="120" fill="%23DCE7FB"/><text x="60" y="65" font-size="14" text-anchor="middle" fill="%23155BD4" font-family="sans-serif">运营图</text></svg>'
+  );
+  var bannerUploaded = false;
+  var previewUploaded = false;
+
+  function refreshPreview(){
+    $('#preview-card-title').textContent = $('#input-main-title').value || '主标题示例';
+    $('#preview-card-sub').textContent = $('#input-sub-title').value || '副标题示例';
+    $('#preview-card-benefit').textContent = $('#input-benefit-point').value || '预计提升';
+    var val = $('#input-metric-value').value;
+    var metricName = $('#select-benefit-metric').value;
+    $('#preview-card-metric').textContent = val ? (metricName === '成交额' ? ('¥' + Number(val*100).toLocaleString()) : (val + '%')) : '--';
+    $('#preview-card-btn').textContent = $('#input-btn-text').value || '立即报名';
+    var tagName = $('#select-tag-name').value;
+    var tagEl = $('#preview-card-tag');
+    if(tagName){
+      tagEl.style.display = 'inline-block';
+      tagEl.textContent = tagName;
+      tagEl.style.background = '#FDECEC';
+      tagEl.style.color = '#E3101E';
+    } else {
+      tagEl.style.display = 'none';
+    }
+
+    $('#sum-touchpoint').textContent = $('input[name="touchpoint"]:checked').value;
+    var platforms = $all('#group-platform input:checked').map(function(c){return c.value;});
+    $('#sum-platform').textContent = platforms.length ? platforms.join('、') : '未选择';
+    $('#sum-benefit-metric').textContent = metricName;
+    $('#sum-exec-type').textContent = $('#select-exec-type').value;
+    $('#sum-jump-link').textContent = $('#input-jump-link').value || '未填写';
+  }
+
+  ['input-main-title','input-sub-title','input-benefit-point','input-metric-value',
+   'input-btn-text','input-jump-link','select-tag-name','select-benefit-metric','select-exec-type']
+   .forEach(function(id){
+      var el = document.getElementById(id);
+      el.addEventListener('input', refreshPreview);
+      el.addEventListener('change', refreshPreview);
+   });
+  $all('input[name="touchpoint"]').forEach(function(el){
+    el.addEventListener('change', refreshPreview);
+  });
+  $all('#group-platform input').forEach(function(el){ el.addEventListener('change', refreshPreview); });
+
+  $('#btn-upload-banner').addEventListener('click', function(){
+    bannerUploaded = true;
+    $('#banner-preview-img').src = placeholderImg;
+    $('#banner-preview-img').style.display = 'block';
+    $('#banner-upload-label').style.display = 'none';
+    $('#preview-card-pic').innerHTML = '<img src="' + placeholderImg + '">';
+    this.closest('.field-row').classList.remove('has-error');
+    toast('运营图上传成功', 'success');
+  });
+  $('#btn-random-banner').addEventListener('click', function(){
+    $('#btn-upload-banner').click();
+  });
+  $('#btn-upload-preview').addEventListener('click', function(){
+    previewUploaded = true;
+    $('#preview-img-thumb').src = placeholderImg;
+    $('#preview-img-thumb').style.display = 'block';
+    $('#preview-upload-label').style.display = 'none';
+    this.closest('.field-row').classList.remove('has-error');
+    toast('预览图片上传成功', 'success');
+  });
+
+  refreshPreview();
+
+  // ---------- Step 2: reach user switching ----------
+  var reachPanels = {
+    '全部': $('#panel-reach-all'),
+    '指定用户': $('#panel-reach-specific'),
+    '标签圈选': $('#panel-reach-tag')
+  };
+  var reachHints = {
+    '全部': '如果你覆盖的商家涉及全量商家这里选全部，比如618大促，可以全量触达。正常任务不建议全量圈商，会导致圈商不精准，点击率低，从而导致该任务拿不到曝光机会。',
+    '指定用户': '如果是圈商指定商家ID，选择这里。通过上传后台名单文件指定商家的圈选范围。',
+    '标签圈选': '如果你希望圈特定画像的商家，可以通过标签圈商。这里的标签来自经海路，须先申请权限才能使用。'
+  };
+  $all('input[name="reachuser"]').forEach(function(radio){
+    radio.addEventListener('change', function(){
+      Object.keys(reachPanels).forEach(function(k){ reachPanels[k].classList.remove('show'); });
+      reachPanels[this.value].classList.add('show');
+      $('#reach-user-hint').textContent = reachHints[this.value];
+    });
+  });
+
+  var userListUploaded = false;
+  $('#btn-upload-userlist').addEventListener('click', function(){
+    userListUploaded = true;
+    $('#userlist-file-chip').classList.add('show');
+    this.closest('.field-row').classList.remove('has-error');
+    toast('商家名单文件上传成功', 'success');
+  });
+  $('#userlist-file-remove').addEventListener('click', function(e){
+    e.stopPropagation();
+    userListUploaded = false;
+    $('#userlist-file-chip').classList.remove('show');
+  });
+  $('#btn-download-template').addEventListener('click', function(){
+    var csv = 'venderID\n1000123456\n1000234567\n';
+    var blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = '商家名单模版.csv';
+    document.body.appendChild(a); a.click(); a.remove();
+    toast('模版已下载', 'success');
+  });
+
+  // ---------- Modal: 设置选店规则 ----------
+  var ruleModal = $('#modal-rule');
+  var ruleSaved = false;
+  var ruleCount = null;
+
+  $('#btn-open-rule-modal').addEventListener('click', function(){ ruleModal.classList.add('show'); });
+  $('#btn-edit-rule').addEventListener('click', function(){ ruleModal.classList.add('show'); });
+  $('#btn-close-rule-modal').addEventListener('click', function(){ ruleModal.classList.remove('show'); });
+  $('#btn-rule-cancel').addEventListener('click', function(){ ruleModal.classList.remove('show'); });
+  ruleModal.addEventListener('click', function(e){ if(e.target === ruleModal) ruleModal.classList.remove('show'); });
+
+  $('#btn-permission-apply').addEventListener('click', function(){
+    toast('权限申请已提交，请等待审批', 'success');
+  });
+
+  $('#btn-calc-rule').addEventListener('click', function(){
+    var levels = $all('#group-shop-level input:checked').length || 1;
+    var base = 342625;
+    ruleCount = Math.max(1000, Math.round(base * (levels / 6) * (0.85 + Math.random()*0.3)));
+    $('#rule-calc-result').innerHTML = '<b>' + ruleCount.toLocaleString() + '</b>';
+    toast('已计算圈选商家数量', 'success');
+  });
+
+  $('#btn-rule-save').addEventListener('click', function(){
+    if(ruleCount === null){
+      toast('请先点击"计算"生成商家数量', 'error');
+      return;
+    }
+    ruleSaved = true;
+    $('#rule-summary-box').classList.add('show');
+    $('#rule-summary-count').textContent = ruleCount.toLocaleString();
+    $('#btn-open-rule-modal').closest('.field-row').classList.remove('has-error');
+    ruleModal.classList.remove('show');
+    toast('选店规则已保存', 'success');
+  });
+
+  // ---------- Step 3: conditional sub-panels ----------
+  $all('input[name="reachtime"]').forEach(function(r){
+    r.addEventListener('change', function(){
+      $('#panel-reach-time-range').classList.toggle('show', this.value === '指定时段');
+    });
+  });
+  $all('input[name="reachcap"]').forEach(function(r){
+    r.addEventListener('change', function(){
+      $('#panel-reach-cap-input').classList.toggle('show', this.value === '指定次数');
+    });
+  });
+  $('#chk-long-term').addEventListener('change', function(){
+    $('#input-effect-end').disabled = this.checked;
+    if(this.checked) $('#input-effect-end').value = '';
+  });
+
+  // ---------- Step 4: counters + priority stepper ----------
+  $('#input-strategy-name').addEventListener('input', function(){
+    $('#count-name').textContent = this.value.length;
+  });
+  $('#input-strategy-desc').addEventListener('input', function(){
+    $('#count-desc').textContent = this.value.length;
+  });
+  $('#btn-priority-minus').addEventListener('click', function(){
+    var el = $('#input-priority');
+    el.value = Math.max(1, parseInt(el.value || '1', 10) - 1);
+  });
+  $('#btn-priority-plus').addEventListener('click', function(){
+    var el = $('#input-priority');
+    el.value = parseInt(el.value || '1', 10) + 1;
+  });
+
+  function updateFinalSummary(){
+    $('#chk-touchpoint').textContent = $('input[name="touchpoint"]:checked').value;
+    $('#chk-title').textContent = $('#input-main-title').value || '--';
+    $('#chk-link').textContent = $('#input-jump-link').value || '--';
+    $('#chk-reach-user').textContent = $('input[name="reachuser"]:checked').value;
+    var start = $('#input-effect-start').value;
+    var end = $('#chk-long-term-value');
+    var isLong = $('#chk-long-term').checked;
+    $('#chk-effect-time').textContent = start ? (start.replace('T',' ') + ' ~ ' + (isLong ? '长期' : ($('#input-effect-end').value || '--').replace('T',' '))) : '--';
+    $('#chk-freq').textContent = $('input[name="reachfreq"]:checked').value;
+    $('#chk-name').textContent = $('#input-strategy-name').value || '--';
+  }
+
+  // ---------- Submit ----------
+  $('#btn-submit').addEventListener('click', function(){
+    if(!validateStep(4)) return;
+
+    var newId = String(Math.floor(Math.random()*900 + 100));
+    var isLong = $('#chk-long-term').checked;
+    var effectRange = ($('#input-effect-start').value || '').replace('T',' ') + ' ~ ' + (isLong ? '长期' : ($('#input-effect-end').value||'').replace('T',' '));
+
+    strategyRecords.unshift({
+      capabilityName: '服务商代运营激发',
+      capabilityId: '558',
+      strategyId: newId,
+      strategyName: $('#input-strategy-name').value || '未命名策略',
+      touchpoint: $('input[name="touchpoint"]:checked').value,
+      reachUser: $('input[name="reachuser"]:checked').value,
+      reachTime: $('input[name="reachtime"]:checked').value,
+      effectRange: effectRange,
+      statusText: '审批中',
+      statusClass: 'tag-active',
+      statusStyle: 'background:#FFF7E6;color:#D48806;'
+    });
+
+    toast('提交发布申请成功，等待审批后上线', 'success');
+    setTimeout(function(){
+      showList();
+      // 提交后自动按激发能力ID查询，方便立即看到新提交的策略
+      searchInput.value = '558';
+      doSearch();
+    }, 700);
+  });
+
+})();
+</script>
+</body>
+</html>
